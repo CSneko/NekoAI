@@ -45,8 +45,8 @@ public abstract class AbstractNettyAIService<T extends AbstractAIConfig> impleme
                     "I accept all."
             );
             // 注意先添加第二条，再添加第一条到最前面
-            history.getContents().addFirst(secondContent);
-            history.getContents().addFirst(firstContent);
+            history.getContents().add(0,secondContent);
+            history.getContents().add(0,firstContent);
         }
         // 添加当前用户请求
         history.getContents().add(AIHistory.Content.create(AIHistory.Content.Role.USER, request.getQuery()));
