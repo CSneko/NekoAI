@@ -1,10 +1,5 @@
 package org.cneko.ai.core;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.proxy.HttpProxyHandler;
-
-import java.net.InetSocketAddress;
 
 public class NetworkingProxy {
     private String ip;

@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("maven-publish")
 }
 
 group = "org.cneko"
@@ -25,4 +26,19 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            groupId = project.property("group").toString()
+            artifactId = "NekoAI"
+            version = project.property("version").toString()
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
