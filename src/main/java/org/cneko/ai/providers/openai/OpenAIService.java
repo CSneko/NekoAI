@@ -117,8 +117,9 @@ public class OpenAIService extends AbstractNettyAIService<OpenAIConfig> {
             String content = response.content().toString(StandardCharsets.UTF_8);
 
             // 若状态码不为 200，则直接返回错误信息
-            if (response.status().code() != HttpResponseStatus.OK.code()) {
-                future.complete(new AIResponse("API Error: " + content, false));
+            int statusCode = response.status().code();
+            if (statusCode != HttpResponseStatus.OK.code()) {
+                future.complete(new AIResponse("API Error: " + content, statusCode));
                 return;
             }
 
@@ -131,44 +132,60 @@ public class OpenAIService extends AbstractNettyAIService<OpenAIConfig> {
                 // 获取 choices 数组
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
                 if (choices == null || choices.isEmpty()) {
-                    future.complete(new AIResponse("No valid response from API", false));
+                    future.complete(new AIResponse("No valid response from API", statusCode));
                     return;
                 }
                 // 取第一个 candidate 的 message 对象
                 Map<String, Object> firstChoice = choices.get(0);
                 Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
                 if (message == null) {
-                    future.complete(new AIResponse("No message in API response", false));
-                    return;
-                }
-                String responseText = (String) message.get("content");
-                if (responseText == null || responseText.isEmpty()) {
-                    future.complete(new AIResponse("Empty response content", false));
+                    future.complete(new AIResponse("No message in API response", statusCode));
                     return;
                 }
 
-                // 保存会话记录（保存的是转换前的 AIHistory 格式）
+                // 同时获取 content 和 reasoning_content
+                String responseText = (String) message.get("content");
+                String reasoningContent = (String) message.get("reasoning_content");
+
+                if (responseText == null || responseText.isEmpty()) {
+                    future.complete(new AIResponse("Empty response content", statusCode));
+                    return;
+                }
+
+                // 构建要保存的文本内容
+                StringBuilder saveContentBuilder = new StringBuilder();
+                if (reasoningContent != null && !reasoningContent.isEmpty()) {
+                    saveContentBuilder.append("<think>").append(reasoningContent).append("</think>");
+                }
+                saveContentBuilder.append(responseText);
+                String saveContent = saveContentBuilder.toString();
+
+                // 保存会话记录（包含思考内容）
                 try {
                     FileStorageUtil.saveConversation(
                             request.getUserId(),
                             request.getSessionId(),
                             request.getQuery(),
-                            responseText
+                            saveContent
                     );
                 } catch (Exception e) {
                     // 记录日志等处理，不影响返回结果
                 }
 
-                // 返回最终的 AIResponse
-                future.complete(new AIResponse(responseText.trim(), true));
+                // 根据是否存在 reasoning_content 构建不同响应对象
+                if (reasoningContent != null && !reasoningContent.isEmpty()) {
+                    future.complete(new AIResponse(responseText.trim(), reasoningContent, statusCode));
+                } else {
+                    future.complete(new AIResponse(responseText.trim(), statusCode));
+                }
             } catch (Exception e) {
-                future.complete(new AIResponse("Response parsing error: " + e.getMessage(), false));
+                future.complete(new AIResponse("Response parsing error: " + e.getMessage(), statusCode));
             }
         }
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            future.complete(new AIResponse("Network error: " + cause.getMessage(), false));
+            future.complete(new AIResponse("Network error: " + cause.getMessage(), 400));
             ctx.close();
         }
     }

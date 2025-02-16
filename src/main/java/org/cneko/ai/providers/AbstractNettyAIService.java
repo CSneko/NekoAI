@@ -106,17 +106,17 @@ public abstract class AbstractNettyAIService<T extends AbstractAIConfig> impleme
                     Channel channel = ((ChannelFuture) f).channel();
                     sendRequest(channel, request);
                 } else {
-                    future.complete(new AIResponse("Connection failed: " + f.cause().getMessage(), false));
+                    future.complete(new AIResponse("Connection failed: " + f.cause().getMessage(), 400));
                 }
             });
         } catch (Exception e) {
-            return new AIResponse("Error: " + e.getMessage(), false);
+            return new AIResponse("Error: " + e.getMessage(), 400);
         }
 
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
-            return new AIResponse("Request interrupted: " + e.getMessage(), false);
+            return new AIResponse("Request interrupted: " + e.getMessage(), 400);
         }
     }
 

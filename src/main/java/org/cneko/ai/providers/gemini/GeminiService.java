@@ -78,9 +78,9 @@ public class GeminiService extends AbstractNettyAIService<GeminiConfig> {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse response) {
             String content = response.content().toString(StandardCharsets.UTF_8);
-
-            if (response.status().code() != HttpResponseStatus.OK.code()) {
-                future.complete(new AIResponse("API Error: " + content, false));
+            int statusCode = response.status().code();
+            if (statusCode != HttpResponseStatus.OK.code()) {
+                future.complete(new AIResponse("API Error: " + content,statusCode));
                 return;
             }
 
@@ -111,16 +111,16 @@ public class GeminiService extends AbstractNettyAIService<GeminiConfig> {
                     LOGGER.error("Error saving conversation: {}", e.getMessage());
                 }
 
-                future.complete(new AIResponse(responseText.trim(), true));
+                future.complete(new AIResponse(responseText.trim(), statusCode));
             } catch (Exception e) {
-                future.complete(new AIResponse("Response parsing error: " + e.getMessage(), false));
+                future.complete(new AIResponse("Response parsing error: " + e.getMessage(), statusCode));
             }
         }
 
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            future.complete(new AIResponse("Network error: " + cause.getMessage(), false));
+            future.complete(new AIResponse("Network error: " + cause.getMessage(), 400));
             ctx.close();
         }
 

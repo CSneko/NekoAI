@@ -5,7 +5,8 @@ import javax.annotation.Nullable;
 public class AIResponse {
     private String think;
     private String response;
-    private boolean success;
+    private String sourceResponse;
+    private int code;
 
     /**
      * 构造函数
@@ -18,10 +19,11 @@ public class AIResponse {
      * 如果文本不是这个格式，则think为null，response为原始文本。
      *
      * @param response 响应文本
-     * @param success  是否成功
+     * @param code  响应码
      */
-    public AIResponse(String response, boolean success) {
-        this.success = success;
+    public AIResponse(String response, int code) {
+        this.code = code;
+        this.sourceResponse = response;
         if (response != null && response.trim().startsWith("<think>")) {
             int startIndex = response.indexOf("<think>");
             int endIndex = response.indexOf("</think>");
@@ -41,6 +43,12 @@ public class AIResponse {
             this.think = null;
             this.response = response;
         }
+    }
+    public AIResponse(String response,String think,int code){
+        this.code = code;
+        this.response = response;
+        this.think = think;
+        this.sourceResponse = response;
     }
 
     // Getter 和 Setter
@@ -66,10 +74,21 @@ public class AIResponse {
     }
 
     public boolean isSuccess() {
-        return success;
+        return code == 200;
+    }
+    public int getCode() {
+        return code;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getSourceResponse() {
+        return sourceResponse;
+    }
+
+    public void setSourceResponse(String sourceResponse) {
+        this.sourceResponse = sourceResponse;
     }
 }
