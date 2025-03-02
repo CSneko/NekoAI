@@ -6,18 +6,24 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.cneko.ai.core.AIHistory;
 import org.cneko.ai.core.AIRequest;
 import org.cneko.ai.core.AIResponse;
 import org.cneko.ai.providers.AbstractNettyAIService;
 import org.cneko.ai.util.FileStorageUtil;
 
+import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static org.cneko.ai.NekoLogger.LOGGER;
 
 /**
  * OpenAIService 是一个通用的服务类，用于调用 OpenAI 格式的聊天补全接口，
@@ -33,12 +39,14 @@ public class OpenAIService extends AbstractNettyAIService<OpenAIConfig> {
     }
 
     /**
-     * 初始化 Channel，添加 SSL、HTTP 编解码器、聚合器及自定义的响应处理器
+     * 初始化 Channel，根据配置动态添加 SSL 处理器
      */
     @Override
     protected void initChannel(SocketChannel ch, AIRequest request, CompletableFuture<AIResponse> future) {
+        // 添加通用处理器
         configurePipeline(ch, new CommonChatHandler(request, future));
     }
+
 
     /**
      * 发送请求，将 AIHistory 转换为 API 所需的 "messages" 格式，并调用配置中指定的 endpoint

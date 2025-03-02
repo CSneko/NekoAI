@@ -5,7 +5,7 @@ import org.cneko.ai.providers.AbstractAIConfig;
 public class OpenAIConfig extends AbstractAIConfig {
     private String endpoint = "/v1/chat/completions";
     public OpenAIConfig(String apiKey) {
-        super(apiKey, "gpt-4o-mini", 0.7, "api.openai.com", 443);
+        super(apiKey, "gpt-4o-mini", 0.7, "api.openai.com", 443,true);
     }
     public String getEndpoint() {
         return endpoint;

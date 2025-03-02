@@ -54,13 +54,18 @@ public abstract class AbstractNettyAIService<T extends AbstractAIConfig> impleme
     }
 
     protected void configurePipeline(SocketChannel ch, ChannelHandler responseHandler) {
+        // 根据 TLS 配置决定是否添加 SSL 处理器
+        if (config.isTls()) {
+            ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+        }
+
         ch.pipeline().addLast(
-                sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()),
                 new HttpClientCodec(),
                 new HttpObjectAggregator(65536),
                 responseHandler
         );
     }
+
 
     protected void saveConversation(AIRequest request, String responseText) {
         try {

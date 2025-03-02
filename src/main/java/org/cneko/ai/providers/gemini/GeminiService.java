@@ -7,12 +7,16 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.cneko.ai.core.AIHistory;
 import org.cneko.ai.core.AIRequest;
 import org.cneko.ai.core.AIResponse;
 import org.cneko.ai.providers.AbstractNettyAIService;
 import org.cneko.ai.util.FileStorageUtil;
 
+import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

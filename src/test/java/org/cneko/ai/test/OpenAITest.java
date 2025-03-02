@@ -9,6 +9,7 @@ import org.cneko.ai.util.FileStorageUtil;
 import org.junit.jupiter.api.Test;
 
 public class OpenAITest {
+    /*
     @Test
     public void testGroq() throws Exception {
         OpenAIConfig config = new OpenAIConfig("XX");
@@ -34,5 +35,25 @@ public class OpenAITest {
         System.out.println("response:"+response.getResponse());
         System.out.println("source:"+response.getSourceResponse());
         System.out.println("code:"+response.getCode());
+    }
+
+     */
+
+    @Test
+    public void testLocal(){
+        OpenAIConfig config = new OpenAIConfig("");
+        config.setHost("127.0.0.1");
+        config.setPort(4315);
+        config.setTls(false);
+        config.setEndpoint("/v1/chat/completions");
+        try {
+            OpenAIService service = new OpenAIService(config);
+            AIResponse response = service.processRequest(new AIRequest("具体一点呢", "1", "local", "你是一个AI大模型", FileStorageUtil.readConversation("1", "local")));
+            System.out.println("think:"+response.getThink());
+            System.out.println("response:"+response.getResponse());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
